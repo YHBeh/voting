@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Vote for Your Favorite Design</title>
+  <style>
+    body { font-family: Arial; margin: 40px; }
+    .design { border: 1px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 8px; }
+    button { padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+</head>
+<body>
+  <h1>Vote for Your Favorite Design</h1>
+  <div id="gallery"></div>
+
+  <script>
+    // REPLACE with your actual Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // List of design works
+    const designs = [
+      { id: "design1", name: "Design A" },
+      { id: "design2", name: "Design B" },
+      { id: "design3", name: "Design C" }
+    ];
+
+    const gallery = document.getElementById("gallery");
+
+    designs.forEach(design => {
+      const div = document.createElement("div");
+      div.className = "design";
+      div.innerHTML = `
+        <h2>${design.name}</h2>
+        <p>Votes: <span id="${design.id}-votes">0</span></p>
+        <button onclick="vote('${design.id}')">Vote</button>
+      `;
+      gallery.appendChild(div);
+
+      // Live vote update
+      db.ref(`votes/${design.id}`).on("value", snapshot => {
+        const votes = snapshot.val() || 0;
+        document.getElementById(`${design.id}-votes`).innerText = votes;
+      });
+    });
+
+    function vote(id) {
+      const ref = db.ref(`votes/${id}`);
+      ref.transaction(current => (current || 0) + 1);
+    }
+  </script>
+</body>
+</html>
